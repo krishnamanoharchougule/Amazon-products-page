@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazon Hover Preview</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ✅ Prevent flicker and layout shift */
+        #main-product-img {
+            width: 100%;
+            height: 300px;             /* fixed height to avoid jumping */
+            object-fit: contain;       /* keeps proportions */
+            background: #fff;          /* fallback background */
+            transition: opacity 0.2s ease-in-out;
+        }
+        .s-color-swatch-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 12px;
+        }
+        .s-color-swatch-outer-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid rgba(0,0,0,0.12);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .s-color-swatch-inner-circle-fill {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: block;
+        }
+        .s-color-swatch-link {
+            position: absolute;
+            inset: 0;
+            display: block;
+            text-indent: -9999px;
+            cursor: pointer;
+            background: transparent;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="display: flex; gap: 24px; padding: 24px;">
+        <!-- Sidebar Filters -->
+        <aside class="sidebar" style="width: 240px;">
+            <h2>Filters</h2>
+            <div class="filter-group">
+                <h3>Brand</h3>
+                <label><input type="checkbox"> Philips</label><br>
+                <label><input type="checkbox"> Ikea</label><br>
+                <label><input type="checkbox"> Syska</label><br>
+            </div>
+            <div class="filter-group">
+                <h3>Price</h3>
+                <label><input type="radio" name="price"> Under $25</label><br>
+                <label><input type="radio" name="price"> $25 to $50</label><br>
+                <label><input type="radio" name="price"> $50 to $100</label>
+            </div>
+            <div class="filter-group">
+                <h3>Color</h3>
+                <label><input type="checkbox"> White</label><br>
+                <label><input type="checkbox"> Black</label><br>
+                <label><input type="checkbox"> Blue</label>
+            </div>
+        </aside>
+
+        <!-- Main Product Grid -->
+        <main class="product-grid" style="flex: 1;">
+            <div class="header">
+                <img src="assets/logo.png">
+            </div>
+            <div class="grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;">
+                
+                <!-- Single Product Card -->
+                <div class="product-card" style="border: 1px solid #ddd; padding: 16px; border-radius: 8px; text-align: center;">
+                    <img id="main-product-img" src="assets/white.jpg" alt="Lamp 1">
+                    <h2 style="font-size: 1.3rem; margin-bottom: 7px;">Modern Bedside Lamp</h2>
+                    <p style="color: #b12704; font-weight: bold; font-size: 1.3rem;">$29.99</p>
+                    <button style="background: #ffd814; border: none; padding: 8px 16px; border-radius: 4px;font-weight: bold;">Add to
+                        Cart</button>
+                    <p style="color: black; font-weight: bold; margin-top: 16px;">Available Colours</p>
+                    
+                    <div class="s-color-swatch-container">
+                        <div class="s-color-swatch-outer-circle">
+                            <span class="s-color-swatch-inner-circle-fill" style="background: #fff;"></span>
+                            <button type="button" class="s-color-swatch-link" data-img="assets/white.jpg" title="White"></button>
+                        </div>
+                        <div class="s-color-swatch-outer-circle">
+                            <span class="s-color-swatch-inner-circle-fill" style="background: #2f2f2f;"></span>
+                            <button type="button" class="s-color-swatch-link" data-img="assets/grey_maze.jpg" title="grey"></button>
+                        </div>
+                        <div class="s-color-swatch-outer-circle">
+                            <span class="s-color-swatch-inner-circle-fill" style="background:green;"></span>
+                            <button type="button" class="s-color-swatch-link" data-img="assets/green.jpg" title="floral"></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="info">
+                    <h3>The point of this project is to create dynamic previews of products.</h3>
+                    <h3>When a user hovers over a color swatch, the main product image updates to show the product in that color.</h3>
+                    <h3>This enhances the user experience by allowing customers to quickly see how different color options look without needing to click through multiple pages.</h3>
+                    <h3>Just try and see the dynamic previews and compare it to the actual amazon webpage here</h3>
+                    <a href="https://www.amazon.in/s?k=Bedside+lamps&ref=nb_sb_noss" style="color: #007185; text-decoration: underline;">Click here to view on Amazon.in</a>
+                    <h3>Hover over the color swatches below the product image to see the effect.</h3>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const mainImg = document.getElementById('main-product-img');
+    const defaultImg = mainImg.getAttribute('src');
+    const swatchContainer = document.querySelector('.s-color-swatch-container');
+    const swatchLinks = document.querySelectorAll('.s-color-swatch-link');
+
+    // ✅ Preload all images
+    const preloadSet = new Set([defaultImg]);
+    swatchLinks.forEach(l => preloadSet.add(l.dataset.img));
+    preloadSet.forEach(url => { const img = new Image(); img.src = url; });
+
+    // ✅ Fade swap helper
+    function fadeSwap(newSrc) {
+        if (mainImg.src.includes(newSrc)) return; // avoid redundant swaps
+        mainImg.style.opacity = 0;
+        setTimeout(() => {
+            mainImg.src = newSrc;
+            mainImg.style.opacity = 1;
+        }, 100);
+    }
+
+    // ✅ Hover swatches → change image
+    swatchLinks.forEach(link => {
+        link.addEventListener('mouseenter', e => {
+            e.preventDefault();
+            fadeSwap(link.dataset.img);
+        });
+        link.addEventListener('click', e => e.preventDefault()); // stop jump
+    });
+});
+</script>
+</body>
+</html>
